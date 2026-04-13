@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Parcours du Combattant — Classement</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a08;
+    --surface: #111110;
+    --card: #181815;
+    --border: #2a2a26;
+    --olive: #8a9a2a;
+    --olive-bright: #b8cc2e;
+    --orange: #e85d00;
+    --orange-light: #ff7a1a;
+    --cream: #f0ead8;
+    --muted: #6b6b60;
+    --gold: #d4a017;
+    --silver: #9ba0a8;
+    --bronze: #b06830;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--cream);
+    font-family: 'Barlow Condensed', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 999;
+    opacity: 0.4;
+  }
+
+  /* NAV */
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 32px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .nav-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 3px;
+    color: var(--olive-bright);
+    line-height: 1;
+  }
+
+  .nav-logo span {
+    color: var(--orange);
+  }
+
+  .nav-tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px;
+  }
+
+  .nav-tab {
+    padding: 8px 20px;
+    border-radius: 4px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    transition: all 0.2s;
+  }
+
+  .nav-tab.active {
+    background: var(--olive);
+    color: var(--bg);
+  }
+
+  .nav-tab:hover:not(.active) {
+    color: var(--cream);
+  }
+
+  .live-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    letter-spacing: 2px;
+    font-weight: 600;
+    color: var(--orange);
+    text-transform: uppercase;
+  }
+
+  .live-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--orange);
+    border-radius: 50%;
+    animation: pulse 1.5s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+  }
+
+  /* PAGES */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* HERO */
+  .hero {
+    padding: 48px 32px 32px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::after {
+    content: 'CLASSEMENT';
+    position: absolute;
+    right: -20px;
+    top: 10px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 120px;
+    color: var(--border);
+    letter-spacing: 8px;
+    pointer-events: none;
+    line-height: 1;
+  }
+
+  .hero-label {
+    font-size: 12px;
+    letter-spacing: 3px;
+    color: var(--olive);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(48px, 8vw, 80px);
+    line-height: 0.9;
+    letter-spacing: 2px;
+    margin-bottom: 16px;
+  }
+
+  .hero-title span { color: var(--orange); }
+
+  .hero-meta {
+    display: flex;
+    gap: 32px;
+    font-size: 13px;
+    letter-spacing: 1px;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  .hero-meta strong {
+    color: var(--cream);
+    font-weight: 600;
+  }
+
+  /* LEADERBOARD */
+  .leaderboard {
+    padding: 0 32px 48px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 3px;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  .section-count {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  /* PODIUM */
+  .podium {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .podium-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 16px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    animation: slideUp 0.5s ease both;
+  }
+
+  .podium-card:nth-child(1) { animation-delay: 0.1s; order: 2; }
+  .podium-card:nth-child(2) { animation-delay: 0.2s; order: 1; }
+  .podium-card:nth-child(3) { animation-delay: 0.3s; order: 3; }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .podium-card.first {
+    border-color: var(--gold);
+    background: linear-gradient(160deg, #1a1608 0%, var(--card) 60%);
+    transform: translateY(-8px);
+  }
+
+  .podium-card.first::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--gold);
+  }
+
+  .podium-card.second { border-color: #3a3d42; }
+  .podium-card.third { border-color: #3a2818; }
+
+  .podium-rank {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 48px;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .first .podium-rank { color: var(--gold); }
+  .second .podium-rank { color: var(--silver); }
+  .third .podium-rank { color: var(--bronze); }
+
+  .podium-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    margin: 0 auto 10px;
+  }
+
+  .first .podium-avatar { background: #2a1e00; color: var(--gold); border: 2px solid var(--gold); }
+  .second .podium-avatar { background: #1a1e22; color: var(--silver); border: 2px solid var(--silver); }
+  .third .podium-avatar { background: #1e0e00; color: var(--bronze); border: 2px solid var(--bronze); }
+
+  .podium-name {
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .podium-time {
+    font-family: 'DM Mono', monospace;
+    font-size: 20px;
+    font-weight: 500;
+  }
+
+  .first .podium-time { color: var(--gold); }
+  .second .podium-time { color: var(--silver); }
+  .third .podium-time { color: var(--bronze); }
+
+  .podium-runs {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 4px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* TABLE */
+  .results-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .results-table th {
+    text-align: left;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    font-weight: 600;
+  }
+
+  .results-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #1a1a18;
+    font-size: 15px;
+  }
+
+  .results-table tr {
+    transition: background 0.15s;
+    animation: slideUp 0.4s ease both;
+  }
+
+  .results-table tr:nth-child(1) { animation-delay: 0.35s; }
+  .results-table tr:nth-child(2) { animation-delay: 0.4s; }
+  .results-table tr:nth-child(3) { animation-delay: 0.45s; }
+  .results-table tr:nth-child(4) { animation-delay: 0.5s; }
+  .results-table tr:nth-child(5) { animation-delay: 0.55s; }
+
+  .results-table tr:hover td { background: var(--card); }
+
+  .rank-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--muted);
+    width: 40px;
+  }
+
+  .participant-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .mini-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 14px;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+
+  .participant-name {
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-size: 15px;
+  }
+
+  .participant-runs {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+
+  .time-cell {
+    font-family: 'DM Mono', monospace;
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--olive-bright);
+  }
+
+  .diff-cell {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: #e05555;
+  }
+
+  .diff-cell.best { color: var(--gold); }
+
+  /* PROFILE PAGE */
+  .profile-hero {
+    padding: 40px 32px 32px;
+    display: flex;
+    gap: 32px;
+    align-items: flex-start;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .profile-avatar-big {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: #1a1e00;
+    border: 3px solid var(--olive);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 38px;
+    color: var(--olive-bright);
+    flex-shrink: 0;
+  }
+
+  .profile-info { flex: 1; }
+
+  .profile-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 52px;
+    letter-spacing: 2px;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .profile-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-top: 16px;
+  }
+
+  .stat-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px;
+  }
+
+  .stat-label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .stat-value {
+    font-family: 'DM Mono', monospace;
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--olive-bright);
+  }
+
+  .stat-value.highlight { color: var(--gold); }
+
+  /* History chart */
+  .history-section {
+    padding: 32px;
+  }
+
+  .history-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 3px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  .chart-container {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+
+  .chart-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    height: 100px;
+  }
+
+  .chart-bar-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .chart-bar {
+    width: 100%;
+    border-radius: 3px 3px 0 0;
+    background: var(--olive);
+    transition: all 0.3s;
+    position: relative;
+  }
+
+  .chart-bar.best-bar { background: var(--gold); }
+
+  .chart-bar:hover { background: var(--olive-bright); }
+
+  .chart-label {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-align: center;
+  }
+
+  .chart-time-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    text-align: center;
+    margin-bottom: 4px;
+  }
+
+  .history-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .history-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 18px;
+  }
+
+  .history-date {
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  .history-time {
+    font-family: 'DM Mono', monospace;
+    font-size: 20px;
+    color: var(--olive-bright);
+  }
+
+  .history-badge {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    padding: 3px 8px;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+
+  .badge-best { background: #2a1e00; color: var(--gold); border: 1px solid var(--gold); }
+  .badge-normal { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+
+  /* ADMIN PAGE */
+  .admin-page {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 40px 32px;
+  }
+
+  .admin-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 42px;
+    letter-spacing: 3px;
+    margin-bottom: 8px;
+  }
+
+  .admin-sub {
+    font-size: 13px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    margin-bottom: 32px;
+    text-transform: uppercase;
+  }
+
+  .form-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 28px;
+    margin-bottom: 24px;
+  }
+
+  .form-label {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+
+  .form-input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 16px;
+    color: var(--cream);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 16px;
+    letter-spacing: 0.5px;
+    outline: none;
+    transition: border-color 0.2s;
+    margin-bottom: 20px;
+  }
+
+  .form-input:focus { border-color: var(--olive); }
+
+  .chrono-display {
+    background: var(--bg);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 20px;
+    font-family: 'DM Mono', monospace;
+    font-size: 48px;
+    font-weight: 500;
+    color: var(--olive-bright);
+    letter-spacing: 4px;
+    transition: border-color 0.2s;
+  }
+
+  .chrono-display.running {
+    border-color: var(--orange);
+    color: var(--orange);
+    animation: chronoPulse 1s infinite;
+  }
+
+  @keyframes chronoPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }
+
+  .btn-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .btn {
+    padding: 14px 20px;
+    border-radius: 6px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+  }
+
+  .btn-start {
+    background: var(--olive);
+    color: var(--bg);
+  }
+
+  .btn-start:hover { background: var(--olive-bright); }
+  .btn-start:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
+
+  .btn-stop {
+    background: var(--orange);
+    color: white;
+  }
+
+  .btn-stop:hover { background: var(--orange-light); }
+  .btn-stop:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
+
+  .btn-save {
+    width: 100%;
+    background: var(--surface);
+    color: var(--cream);
+    border: 1px solid var(--border);
+    padding: 14px;
+    border-radius: 6px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn-save:hover { border-color: var(--olive); color: var(--olive-bright); }
+
+  .recent-entries {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+  }
+
+  .recent-title {
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+
+  .entry-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .entry-item:last-child { border-bottom: none; }
+
+  .entry-name {
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .entry-time {
+    font-family: 'DM Mono', monospace;
+    font-size: 16px;
+    color: var(--olive-bright);
+  }
+
+  .entry-delete {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 16px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: color 0.15s;
+  }
+
+  .entry-delete:hover { color: #e05555; }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    nav { padding: 14px 16px; }
+    .hero, .leaderboard, .history-section { padding-left: 16px; padding-right: 16px; }
+    .hero::after { display: none; }
+    .podium { grid-template-columns: 1fr; }
+    .podium-card { order: unset !important; transform: none !important; }
+    .profile-stats { grid-template-columns: 1fr 1fr; }
+    .profile-hero { flex-direction: column; gap: 16px; }
+    .admin-page { padding: 24px 16px; }
+    .nav-logo { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">PARCOURS<span>.</span>COMBAT</div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('classement')">Classement</button>
+    <button class="nav-tab" onclick="showPage('profil')">Profil</button>
+    <button class="nav-tab" onclick="showPage('admin')">Admin</button>
+  </div>
+  <div class="live-badge">
+    <div class="live-dot"></div>
+    Live
+  </div>
+</nav>
+
+<!-- PAGE CLASSEMENT -->
+<div class="page active" id="page-classement">
+  <div class="hero">
+    <div class="hero-label">Saison 2025 · Jardin des Durand</div>
+    <h1 class="hero-title">Classement<br><span>Général</span></h1>
+    <div class="hero-meta">
+      <div><strong>8</strong> participants</div>
+      <div><strong>23</strong> passages</div>
+      <div>Mis à jour <strong>il y a 2 min</strong></div>
+    </div>
+  </div>
+
+  <div class="leaderboard">
+    <div class="section-header">
+      <div class="section-title">Podium</div>
+    </div>
+
+    <div class="podium">
+      <!-- 1st -->
+      <div class="podium-card first">
+        <div class="podium-rank">1</div>
+        <div class="podium-avatar">TM</div>
+        <div class="podium-name">Thomas M.</div>
+        <div class="podium-time">01:42.3</div>
+        <div class="podium-runs">5 passages</div>
+      </div>
+      <!-- 2nd -->
+      <div class="podium-card second">
+        <div class="podium-rank">2</div>
+        <div class="podium-avatar">SL</div>
+        <div class="podium-name">Sophie L.</div>
+        <div class="podium-time">01:48.7</div>
+        <div class="podium-runs">4 passages</div>
+      </div>
+      <!-- 3rd -->
+      <div class="podium-card third">
+        <div class="podium-rank">3</div>
+        <div class="podium-avatar">KD</div>
+        <div class="podium-name">Kevin D.</div>
+        <div class="podium-time">01:53.1</div>
+        <div class="podium-runs">6 passages</div>
+      </div>
+    </div>
+
+    <div class="section-header">
+      <div class="section-title">Tous les résultats</div>
+      <div class="section-count">8 / 8</div>
+    </div>
+
+    <table class="results-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Participant</th>
+          <th>Meilleur temps</th>
+          <th>Écart</th>
+          <th>Passages</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="rank-num">4</td>
+          <td><div class="participant-cell"><div class="mini-avatar">MC</div><div><div class="participant-name">Marc C.</div><div class="participant-runs">3 passages</div></div></div></td>
+          <td class="time-cell">01:58.4</td>
+          <td class="diff-cell">+16.1s</td>
+          <td>3</td>
+        </tr>
+        <tr>
+          <td class="rank-num">5</td>
+          <td><div class="participant-cell"><div class="mini-avatar">EB</div><div><div class="participant-name">Emma B.</div><div class="participant-runs">4 passages</div></div></div></td>
+          <td class="time-cell">02:03.0</td>
+          <td class="diff-cell">+20.7s</td>
+          <td>4</td>
+        </tr>
+        <tr>
+          <td class="rank-num">6</td>
+          <td><div class="participant-cell"><div class="mini-avatar">JR</div><div><div class="participant-name">Julie R.</div><div class="participant-runs">2 passages</div></div></div></td>
+          <td class="time-cell">02:11.8</td>
+          <td class="diff-cell">+29.5s</td>
+          <td>2</td>
+        </tr>
+        <tr>
+          <td class="rank-num">7</td>
+          <td><div class="participant-cell"><div class="mini-avatar">PV</div><div><div class="participant-name">Pierre V.</div><div class="participant-runs">3 passages</div></div></div></td>
+          <td class="time-cell">02:18.2</td>
+          <td class="diff-cell">+35.9s</td>
+          <td>3</td>
+        </tr>
+        <tr>
+          <td class="rank-num">8</td>
+          <td><div class="participant-cell"><div class="mini-avatar">LF</div><div><div class="participant-name">Lucie F.</div><div class="participant-runs">2 passages</div></div></div></td>
+          <td class="time-cell">02:24.5</td>
+          <td class="diff-cell">+42.2s</td>
+          <td>2</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- PAGE PROFIL -->
+<div class="page" id="page-profil">
+  <div class="profile-hero">
+    <div class="profile-avatar-big">TM</div>
+    <div class="profile-info">
+      <div style="font-size:12px;letter-spacing:3px;color:var(--olive);text-transform:uppercase;margin-bottom:4px;">Profil · Classement #1</div>
+      <div class="profile-name">Thomas M.</div>
+      <div class="profile-stats">
+        <div class="stat-box">
+          <div class="stat-label">Meilleur temps</div>
+          <div class="stat-value highlight">01:42.3</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Passages</div>
+          <div class="stat-value">5</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Moy.</div>
+          <div class="stat-value">01:47.1</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Progression</div>
+          <div class="stat-value" style="color:#4caf50">-18s</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="history-section">
+    <div class="history-title">Historique des passages</div>
+
+    <div class="chart-container">
+      <div style="font-size:11px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:16px;">Évolution des chronos</div>
+      <div class="chart-bars" id="chartBars"></div>
+    </div>
+
+    <div class="history-list">
+      <div class="history-item">
+        <div>
+          <div class="history-date">13 avr. 2025 · 15h32</div>
+        </div>
+        <div class="history-time">01:42.3</div>
+        <span class="history-badge badge-best">⭐ Record</span>
+      </div>
+      <div class="history-item">
+        <div><div class="history-date">13 avr. 2025 · 14h55</div></div>
+        <div class="history-time">01:46.8</div>
+        <span class="history-badge badge-normal">Passage 4</span>
+      </div>
+      <div class="history-item">
+        <div><div class="history-date">12 avr. 2025 · 17h10</div></div>
+        <div class="history-time">01:49.2</div>
+        <span class="history-badge badge-normal">Passage 3</span>
+      </div>
+      <div class="history-item">
+        <div><div class="history-date">12 avr. 2025 · 16h30</div></div>
+        <div class="history-time">01:54.0</div>
+        <span class="history-badge badge-normal">Passage 2</span>
+      </div>
+      <div class="history-item">
+        <div><div class="history-date">11 avr. 2025 · 11h00</div></div>
+        <div class="history-time">02:00.5</div>
+        <span class="history-badge badge-normal">Passage 1</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE ADMIN -->
+<div class="page" id="page-admin">
+  <div class="admin-page">
+    <div class="admin-title">Interface Admin</div>
+    <div class="admin-sub">Saisie des chronos · Protégée par mot de passe</div>
+
+    <div class="form-card">
+      <label class="form-label">Nom du participant</label>
+      <input class="form-input" type="text" placeholder="Ex: Thomas M." id="adminName">
+
+      <label class="form-label">Chronomètre</label>
+      <div class="chrono-display" id="chronoDisplay">00:00.0</div>
+
+      <div class="btn-row">
+        <button class="btn btn-start" id="btnStart" onclick="startChrono()">▶ Démarrer</button>
+        <button class="btn btn-stop" id="btnStop" onclick="stopChrono()" disabled>■ Arrêter</button>
+      </div>
+
+      <button class="btn-save" onclick="saveEntry()">💾 Enregistrer ce temps</button>
+    </div>
+
+    <div class="recent-entries">
+      <div class="recent-title">Dernières saisies</div>
+      <div id="recentList">
+        <div class="entry-item">
+          <div class="entry-name">Thomas M.</div>
+          <div class="entry-time">01:42.3</div>
+          <button class="entry-delete">✕</button>
+        </div>
+        <div class="entry-item">
+          <div class="entry-name">Sophie L.</div>
+          <div class="entry-time">01:48.7</div>
+          <button class="entry-delete">✕</button>
+        </div>
+        <div class="entry-item">
+          <div class="entry-name">Kevin D.</div>
+          <div class="entry-time">01:53.1</div>
+          <button class="entry-delete">✕</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Navigation
+  function showPage(name) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('page-' + name).classList.add('active');
+    event.target.classList.add('active');
+  }
+
+  // Chrono
+  let chronoInterval = null;
+  let chronoMs = 0;
+  let running = false;
+
+  function formatChrono(ms) {
+    const mins = Math.floor(ms / 60000);
+    const secs = Math.floor((ms % 60000) / 1000);
+    const tenths = Math.floor((ms % 1000) / 100);
+    return `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}.${tenths}`;
+  }
+
+  function startChrono() {
+    if (running) return;
+    running = true;
+    const start = Date.now() - chronoMs;
+    chronoInterval = setInterval(() => {
+      chronoMs = Date.now() - start;
+      document.getElementById('chronoDisplay').textContent = formatChrono(chronoMs);
+    }, 100);
+    document.getElementById('chronoDisplay').classList.add('running');
+    document.getElementById('btnStart').disabled = true;
+    document.getElementById('btnStop').disabled = false;
+  }
+
+  function stopChrono() {
+    if (!running) return;
+    running = false;
+    clearInterval(chronoInterval);
+    document.getElementById('chronoDisplay').classList.remove('running');
+    document.getElementById('btnStart').disabled = false;
+    document.getElementById('btnStop').disabled = true;
+  }
+
+  function saveEntry() {
+    const name = document.getElementById('adminName').value.trim() || 'Anonyme';
+    const time = document.getElementById('chronoDisplay').textContent;
+    const list = document.getElementById('recentList');
+    const item = document.createElement('div');
+    item.className = 'entry-item';
+    item.innerHTML = `<div class="entry-name">${name}</div><div class="entry-time">${time}</div><button class="entry-delete" onclick="this.parentElement.remove()">✕</button>`;
+    list.prepend(item);
+    // reset
+    chronoMs = 0;
+    document.getElementById('chronoDisplay').textContent = '00:00.0';
+    document.getElementById('adminName').value = '';
+    document.getElementById('btnStart').disabled = false;
+  }
+
+  // Chart
+  const times = [120.5, 114.0, 109.2, 106.8, 102.3];
+  const max = Math.max(...times);
+  const min = Math.min(...times);
+  const labels = ['P1', 'P2', 'P3', 'P4', 'P5'];
+  const container = document.getElementById('chartBars');
+
+  times.forEach((t, i) => {
+    const height = 20 + ((max - t) / (max - min)) * 70;
+    const isBest = t === min;
+    const wrap = document.createElement('div');
+    wrap.className = 'chart-bar-wrap';
+    const timeLabel = document.createElement('div');
+    timeLabel.className = 'chart-time-label';
+    timeLabel.textContent = `${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')}`;
+    const bar = document.createElement('div');
+    bar.className = 'chart-bar' + (isBest ? ' best-bar' : '');
+    bar.style.height = height + 'px';
+    const label = document.createElement('div');
+    label.className = 'chart-label';
+    label.textContent = labels[i];
+    wrap.appendChild(timeLabel);
+    wrap.appendChild(bar);
+    wrap.appendChild(label);
+    container.appendChild(wrap);
+  });
+</script>
+</body>
+</html>
