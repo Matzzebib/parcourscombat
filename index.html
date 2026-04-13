@@ -174,6 +174,7 @@
     letter-spacing: 1px;
     color: var(--muted);
     text-transform: uppercase;
+    flex-wrap: wrap;
   }
 
   .hero-meta strong {
@@ -697,6 +698,19 @@
 
   .btn-save:hover { border-color: var(--olive); color: var(--olive-bright); }
 
+  .btn-save:disabled {
+    opacity: 0.6;
+    cursor: wait;
+  }
+
+  .save-status {
+    margin-top: 12px;
+    font-size: 13px;
+    letter-spacing: 1px;
+    color: var(--muted);
+    min-height: 18px;
+  }
+
   .recent-entries {
     background: var(--card);
     border: 1px solid var(--border);
@@ -749,6 +763,12 @@
 
   .entry-delete:hover { color: #e05555; }
 
+  .empty-state {
+    color: var(--muted);
+    font-size: 14px;
+    padding: 12px 0;
+  }
+
   /* Responsive */
   @media (max-width: 600px) {
     nav { padding: 14px 16px; }
@@ -768,9 +788,9 @@
 <nav>
   <div class="nav-logo">PARCOURS<span>.</span>COMBAT</div>
   <div class="nav-tabs">
-    <button class="nav-tab active" onclick="showPage('classement')">Classement</button>
-    <button class="nav-tab" onclick="showPage('profil')">Profil</button>
-    <button class="nav-tab" onclick="showPage('admin')">Admin</button>
+    <button class="nav-tab active" onclick="showPage('classement', this)">Classement</button>
+    <button class="nav-tab" onclick="showPage('profil', this)">Profil</button>
+    <button class="nav-tab" onclick="showPage('admin', this)">Admin</button>
   </div>
   <div class="live-badge">
     <div class="live-dot"></div>
@@ -781,12 +801,12 @@
 <!-- PAGE CLASSEMENT -->
 <div class="page active" id="page-classement">
   <div class="hero">
-    <div class="hero-label">Saison 2025 · Jardin des Durand</div>
+    <div class="hero-label">Saison 2026 · Jardin des Durand</div>
     <h1 class="hero-title">Classement<br><span>Général</span></h1>
     <div class="hero-meta">
-      <div><strong>8</strong> participants</div>
-      <div><strong>23</strong> passages</div>
-      <div>Mis à jour <strong>il y a 2 min</strong></div>
+      <div><strong id="participantsCount">0</strong> participants</div>
+      <div><strong id="runsCount">0</strong> passages</div>
+      <div>Mis à jour <strong id="lastUpdated">à l'instant</strong></div>
     </div>
   </div>
 
@@ -795,36 +815,13 @@
       <div class="section-title">Podium</div>
     </div>
 
-    <div class="podium">
-      <!-- 1st -->
-      <div class="podium-card first">
-        <div class="podium-rank">1</div>
-        <div class="podium-avatar">TM</div>
-        <div class="podium-name">Thomas M.</div>
-        <div class="podium-time">01:42.3</div>
-        <div class="podium-runs">5 passages</div>
-      </div>
-      <!-- 2nd -->
-      <div class="podium-card second">
-        <div class="podium-rank">2</div>
-        <div class="podium-avatar">SL</div>
-        <div class="podium-name">Sophie L.</div>
-        <div class="podium-time">01:48.7</div>
-        <div class="podium-runs">4 passages</div>
-      </div>
-      <!-- 3rd -->
-      <div class="podium-card third">
-        <div class="podium-rank">3</div>
-        <div class="podium-avatar">KD</div>
-        <div class="podium-name">Kevin D.</div>
-        <div class="podium-time">01:53.1</div>
-        <div class="podium-runs">6 passages</div>
-      </div>
+    <div class="podium" id="podiumContainer">
+      <div class="empty-state">Aucun chrono enregistré pour le moment.</div>
     </div>
 
     <div class="section-header">
       <div class="section-title">Tous les résultats</div>
-      <div class="section-count">8 / 8</div>
+      <div class="section-count" id="resultsCount">0 / 0</div>
     </div>
 
     <table class="results-table">
@@ -837,41 +834,9 @@
           <th>Passages</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody id="resultsBody">
         <tr>
-          <td class="rank-num">4</td>
-          <td><div class="participant-cell"><div class="mini-avatar">MC</div><div><div class="participant-name">Marc C.</div><div class="participant-runs">3 passages</div></div></div></td>
-          <td class="time-cell">01:58.4</td>
-          <td class="diff-cell">+16.1s</td>
-          <td>3</td>
-        </tr>
-        <tr>
-          <td class="rank-num">5</td>
-          <td><div class="participant-cell"><div class="mini-avatar">EB</div><div><div class="participant-name">Emma B.</div><div class="participant-runs">4 passages</div></div></div></td>
-          <td class="time-cell">02:03.0</td>
-          <td class="diff-cell">+20.7s</td>
-          <td>4</td>
-        </tr>
-        <tr>
-          <td class="rank-num">6</td>
-          <td><div class="participant-cell"><div class="mini-avatar">JR</div><div><div class="participant-name">Julie R.</div><div class="participant-runs">2 passages</div></div></div></td>
-          <td class="time-cell">02:11.8</td>
-          <td class="diff-cell">+29.5s</td>
-          <td>2</td>
-        </tr>
-        <tr>
-          <td class="rank-num">7</td>
-          <td><div class="participant-cell"><div class="mini-avatar">PV</div><div><div class="participant-name">Pierre V.</div><div class="participant-runs">3 passages</div></div></div></td>
-          <td class="time-cell">02:18.2</td>
-          <td class="diff-cell">+35.9s</td>
-          <td>3</td>
-        </tr>
-        <tr>
-          <td class="rank-num">8</td>
-          <td><div class="participant-cell"><div class="mini-avatar">LF</div><div><div class="participant-name">Lucie F.</div><div class="participant-runs">2 passages</div></div></div></td>
-          <td class="time-cell">02:24.5</td>
-          <td class="diff-cell">+42.2s</td>
-          <td>2</td>
+          <td colspan="5" class="empty-state">Chargement des résultats...</td>
         </tr>
       </tbody>
     </table>
@@ -881,26 +846,26 @@
 <!-- PAGE PROFIL -->
 <div class="page" id="page-profil">
   <div class="profile-hero">
-    <div class="profile-avatar-big">TM</div>
+    <div class="profile-avatar-big" id="profileAvatar">--</div>
     <div class="profile-info">
-      <div style="font-size:12px;letter-spacing:3px;color:var(--olive);text-transform:uppercase;margin-bottom:4px;">Profil · Classement #1</div>
-      <div class="profile-name">Thomas M.</div>
+      <div id="profileRankLabel" style="font-size:12px;letter-spacing:3px;color:var(--olive);text-transform:uppercase;margin-bottom:4px;">Profil · Aucun chrono</div>
+      <div class="profile-name" id="profileName">Aucun participant</div>
       <div class="profile-stats">
         <div class="stat-box">
           <div class="stat-label">Meilleur temps</div>
-          <div class="stat-value highlight">01:42.3</div>
+          <div class="stat-value highlight" id="profileBest">--:--.-</div>
         </div>
         <div class="stat-box">
           <div class="stat-label">Passages</div>
-          <div class="stat-value">5</div>
+          <div class="stat-value" id="profileRuns">0</div>
         </div>
         <div class="stat-box">
           <div class="stat-label">Moy.</div>
-          <div class="stat-value">01:47.1</div>
+          <div class="stat-value" id="profileAverage">--:--.-</div>
         </div>
         <div class="stat-box">
           <div class="stat-label">Progression</div>
-          <div class="stat-value" style="color:#4caf50">-18s</div>
+          <div class="stat-value" id="profileProgress">--</div>
         </div>
       </div>
     </div>
@@ -914,34 +879,8 @@
       <div class="chart-bars" id="chartBars"></div>
     </div>
 
-    <div class="history-list">
-      <div class="history-item">
-        <div>
-          <div class="history-date">13 avr. 2025 · 15h32</div>
-        </div>
-        <div class="history-time">01:42.3</div>
-        <span class="history-badge badge-best">⭐ Record</span>
-      </div>
-      <div class="history-item">
-        <div><div class="history-date">13 avr. 2025 · 14h55</div></div>
-        <div class="history-time">01:46.8</div>
-        <span class="history-badge badge-normal">Passage 4</span>
-      </div>
-      <div class="history-item">
-        <div><div class="history-date">12 avr. 2025 · 17h10</div></div>
-        <div class="history-time">01:49.2</div>
-        <span class="history-badge badge-normal">Passage 3</span>
-      </div>
-      <div class="history-item">
-        <div><div class="history-date">12 avr. 2025 · 16h30</div></div>
-        <div class="history-time">01:54.0</div>
-        <span class="history-badge badge-normal">Passage 2</span>
-      </div>
-      <div class="history-item">
-        <div><div class="history-date">11 avr. 2025 · 11h00</div></div>
-        <div class="history-time">02:00.5</div>
-        <span class="history-badge badge-normal">Passage 1</span>
-      </div>
+    <div class="history-list" id="historyList">
+      <div class="empty-state">Aucun historique disponible.</div>
     </div>
   </div>
 </div>
@@ -950,7 +889,7 @@
 <div class="page" id="page-admin">
   <div class="admin-page">
     <div class="admin-title">Interface Admin</div>
-    <div class="admin-sub">Saisie des chronos · Protégée par mot de passe</div>
+    <div class="admin-sub">Saisie des chronos · Reliée à Supabase</div>
 
     <div class="form-card">
       <label class="form-label">Nom du participant</label>
@@ -964,54 +903,310 @@
         <button class="btn btn-stop" id="btnStop" onclick="stopChrono()" disabled>■ Arrêter</button>
       </div>
 
-      <button class="btn-save" onclick="saveEntry()">💾 Enregistrer ce temps</button>
+      <button class="btn-save" id="saveButton" onclick="saveEntry()">Enregistrer ce temps</button>
+      <div class="save-status" id="saveStatus"></div>
     </div>
 
     <div class="recent-entries">
       <div class="recent-title">Dernières saisies</div>
       <div id="recentList">
-        <div class="entry-item">
-          <div class="entry-name">Thomas M.</div>
-          <div class="entry-time">01:42.3</div>
-          <button class="entry-delete">✕</button>
-        </div>
-        <div class="entry-item">
-          <div class="entry-name">Sophie L.</div>
-          <div class="entry-time">01:48.7</div>
-          <button class="entry-delete">✕</button>
-        </div>
-        <div class="entry-item">
-          <div class="entry-name">Kevin D.</div>
-          <div class="entry-time">01:53.1</div>
-          <button class="entry-delete">✕</button>
-        </div>
+        <div class="empty-state">Aucune saisie récente.</div>
       </div>
     </div>
   </div>
 </div>
 
-<script>
-  // Navigation
-  function showPage(name) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-    document.getElementById('page-' + name).classList.add('active');
-    event.target.classList.add('active');
-  }
+<script type="module">
+  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-  // Chrono
+  const supabaseUrl = "https://bbeucermbrdofffsbpsz.supabase.co";
+  const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJiZXVjZXJtYnJkb2ZmZnNicHN6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDMwMTQsImV4cCI6MjA5MTY3OTAxNH0.KcKrZvmnHfzglk7uQjcqNyNvHQbrYP4NTT46sLo_4aw";
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
   let chronoInterval = null;
   let chronoMs = 0;
   let running = false;
+
+  window.showPage = function showPage(name, button) {
+    document.querySelectorAll('.page').forEach((page) => page.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach((tab) => tab.classList.remove('active'));
+    document.getElementById(`page-${name}`).classList.add('active');
+    if (button) button.classList.add('active');
+  };
 
   function formatChrono(ms) {
     const mins = Math.floor(ms / 60000);
     const secs = Math.floor((ms % 60000) / 1000);
     const tenths = Math.floor((ms % 1000) / 100);
-    return `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}.${tenths}`;
+    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}.${tenths}`;
   }
 
-  function startChrono() {
+  function secondsToChrono(seconds) {
+    if (typeof seconds !== 'number' || Number.isNaN(seconds)) return '--:--.-';
+    return formatChrono(Math.round(seconds * 1000));
+  }
+
+  function formatDiff(seconds) {
+    return seconds <= 0 ? 'Best' : `+${seconds.toFixed(1)}s`;
+  }
+
+  function getInitials(name) {
+    return name
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase() ?? '')
+      .join('') || '--';
+  }
+
+  function escapeHtml(value) {
+    return String(value)
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#39;');
+  }
+
+  function formatRelativeDate(dateString) {
+    if (!dateString) return "à l'instant";
+    const diffMs = Date.now() - new Date(dateString).getTime();
+    const diffMinutes = Math.max(0, Math.round(diffMs / 60000));
+    if (diffMinutes < 1) return "à l'instant";
+    if (diffMinutes < 60) return `il y a ${diffMinutes} min`;
+    const diffHours = Math.round(diffMinutes / 60);
+    if (diffHours < 24) return `il y a ${diffHours} h`;
+    return `il y a ${Math.round(diffHours / 24)} j`;
+  }
+
+  function formatHistoryDate(dateString) {
+    if (!dateString) return 'Date inconnue';
+    return new Date(dateString).toLocaleString('fr-FR', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
+  function aggregateParticipants(rows) {
+    const grouped = new Map();
+    rows.forEach((row) => {
+      const pseudo = row.pseudo || 'Anonyme';
+      if (!grouped.has(pseudo)) {
+        grouped.set(pseudo, { pseudo, best: row.temps, runs: 0, total: 0 });
+      }
+      const participant = grouped.get(pseudo);
+      participant.runs += 1;
+      participant.total += row.temps;
+      participant.best = Math.min(participant.best, row.temps);
+    });
+    return [...grouped.values()].sort((a, b) => a.best - b.best);
+  }
+
+  function renderPodium(participants) {
+    const container = document.getElementById('podiumContainer');
+    container.innerHTML = '';
+
+    if (!participants.length) {
+      container.innerHTML = '<div class="empty-state">Aucun chrono enregistré pour le moment.</div>';
+      return;
+    }
+
+    const rankClasses = ['first', 'second', 'third'];
+    participants.slice(0, 3).forEach((participant, index) => {
+      const card = document.createElement('div');
+      card.className = `podium-card ${rankClasses[index]}`;
+      card.innerHTML = `
+        <div class="podium-rank">${index + 1}</div>
+        <div class="podium-avatar">${escapeHtml(getInitials(participant.pseudo))}</div>
+        <div class="podium-name">${escapeHtml(participant.pseudo)}</div>
+        <div class="podium-time">${secondsToChrono(participant.best)}</div>
+        <div class="podium-runs">${participant.runs} passage${participant.runs > 1 ? 's' : ''}</div>
+      `;
+      container.appendChild(card);
+    });
+  }
+
+  function renderResults(participants) {
+    const body = document.getElementById('resultsBody');
+    body.innerHTML = '';
+
+    if (!participants.length) {
+      body.innerHTML = '<tr><td colspan="5" class="empty-state">Aucun résultat disponible.</td></tr>';
+      return;
+    }
+
+    const bestTime = participants[0].best;
+    participants.forEach((participant, index) => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td class="rank-num">${index + 1}</td>
+        <td>
+          <div class="participant-cell">
+            <div class="mini-avatar">${escapeHtml(getInitials(participant.pseudo))}</div>
+            <div>
+              <div class="participant-name">${escapeHtml(participant.pseudo)}</div>
+              <div class="participant-runs">${participant.runs} passage${participant.runs > 1 ? 's' : ''}</div>
+            </div>
+          </div>
+        </td>
+        <td class="time-cell">${secondsToChrono(participant.best)}</td>
+        <td class="diff-cell ${index === 0 ? 'best' : ''}">${formatDiff(participant.best - bestTime)}</td>
+        <td>${participant.runs}</td>
+      `;
+      body.appendChild(row);
+    });
+  }
+
+  function renderRecent(rows) {
+    const list = document.getElementById('recentList');
+    list.innerHTML = '';
+
+    if (!rows.length) {
+      list.innerHTML = '<div class="empty-state">Aucune saisie récente.</div>';
+      return;
+    }
+
+    rows.slice(0, 5).forEach((row) => {
+      const item = document.createElement('div');
+      item.className = 'entry-item';
+      item.innerHTML = `
+        <div class="entry-name">${escapeHtml(row.pseudo || 'Anonyme')}</div>
+        <div class="entry-time">${secondsToChrono(row.temps)}</div>
+        <button class="entry-delete" title="Supprimer cette entrée">✕</button>
+      `;
+      item.querySelector('.entry-delete').addEventListener('click', async () => {
+        await deleteEntry(row.id);
+      });
+      list.appendChild(item);
+    });
+  }
+
+  function renderProfile(rows, participants) {
+    const chartBars = document.getElementById('chartBars');
+    const historyList = document.getElementById('historyList');
+    chartBars.innerHTML = '';
+    historyList.innerHTML = '';
+
+    if (!participants.length) {
+      document.getElementById('profileAvatar').textContent = '--';
+      document.getElementById('profileRankLabel').textContent = 'Profil · Aucun chrono';
+      document.getElementById('profileName').textContent = 'Aucun participant';
+      document.getElementById('profileBest').textContent = '--:--.-';
+      document.getElementById('profileRuns').textContent = '0';
+      document.getElementById('profileAverage').textContent = '--:--.-';
+      document.getElementById('profileProgress').textContent = '--';
+      historyList.innerHTML = '<div class="empty-state">Aucun historique disponible.</div>';
+      return;
+    }
+
+    const leader = participants[0];
+    const leaderRows = rows
+      .filter((row) => (row.pseudo || 'Anonyme') === leader.pseudo)
+      .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+
+    const average = leader.total / leader.runs;
+    const oldest = leaderRows[leaderRows.length - 1]?.temps;
+    const progress = typeof oldest === 'number' ? oldest - leader.best : 0;
+
+    document.getElementById('profileAvatar').textContent = getInitials(leader.pseudo);
+    document.getElementById('profileRankLabel').textContent = 'Profil · Classement #1';
+    document.getElementById('profileName').textContent = leader.pseudo;
+    document.getElementById('profileBest').textContent = secondsToChrono(leader.best);
+    document.getElementById('profileRuns').textContent = String(leader.runs);
+    document.getElementById('profileAverage').textContent = secondsToChrono(average);
+
+    const progressNode = document.getElementById('profileProgress');
+    progressNode.textContent = `${progress >= 0 ? '-' : '+'}${Math.abs(progress).toFixed(1)}s`;
+    progressNode.style.color = progress >= 0 ? '#4caf50' : '#e05555';
+
+    if (!leaderRows.length) {
+      historyList.innerHTML = '<div class="empty-state">Aucun historique disponible.</div>';
+      return;
+    }
+
+    const chronological = [...leaderRows].reverse();
+    const max = Math.max(...chronological.map((row) => row.temps));
+    const min = Math.min(...chronological.map((row) => row.temps));
+    const range = Math.max(max - min, 1);
+
+    chronological.forEach((row, index) => {
+      const wrap = document.createElement('div');
+      wrap.className = 'chart-bar-wrap';
+
+      const timeLabel = document.createElement('div');
+      timeLabel.className = 'chart-time-label';
+      timeLabel.textContent = secondsToChrono(row.temps);
+
+      const bar = document.createElement('div');
+      bar.className = 'chart-bar' + (row.temps === min ? ' best-bar' : '');
+      bar.style.height = `${20 + ((max - row.temps) / range) * 70}px`;
+
+      const label = document.createElement('div');
+      label.className = 'chart-label';
+      label.textContent = `P${index + 1}`;
+
+      wrap.appendChild(timeLabel);
+      wrap.appendChild(bar);
+      wrap.appendChild(label);
+      chartBars.appendChild(wrap);
+    });
+
+    leaderRows.forEach((row, index) => {
+      const item = document.createElement('div');
+      item.className = 'history-item';
+      item.innerHTML = `
+        <div><div class="history-date">${escapeHtml(formatHistoryDate(row.created_at))}</div></div>
+        <div class="history-time">${secondsToChrono(row.temps)}</div>
+        <span class="history-badge ${row.temps === min ? 'badge-best' : 'badge-normal'}">${row.temps === min ? 'Record' : `Passage ${leaderRows.length - index}`}</span>
+      `;
+      historyList.appendChild(item);
+    });
+  }
+
+  function updateMeta(rows, participants) {
+    document.getElementById('participantsCount').textContent = participants.length;
+    document.getElementById('runsCount').textContent = rows.length;
+    document.getElementById('resultsCount').textContent = `${participants.length} / ${participants.length}`;
+    document.getElementById('lastUpdated').textContent = formatRelativeDate(rows[0]?.created_at);
+  }
+
+  async function loadScores() {
+    const { data, error } = await supabase
+      .from('scores')
+      .select('id, pseudo, temps, created_at')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Erreur au chargement des scores :', error);
+      document.getElementById('resultsBody').innerHTML = '<tr><td colspan="5" class="empty-state">Impossible de charger les résultats.</td></tr>';
+      document.getElementById('podiumContainer').innerHTML = '<div class="empty-state">Impossible de charger le podium.</div>';
+      document.getElementById('recentList').innerHTML = '<div class="empty-state">Impossible de charger les dernières saisies.</div>';
+      return;
+    }
+
+    const rows = data || [];
+    const participants = aggregateParticipants(rows);
+    renderPodium(participants);
+    renderResults(participants);
+    renderRecent(rows);
+    renderProfile(rows, participants);
+    updateMeta(rows, participants);
+  }
+
+  function resetChronoUi() {
+    chronoMs = 0;
+    running = false;
+    clearInterval(chronoInterval);
+    document.getElementById('chronoDisplay').textContent = '00:00.0';
+    document.getElementById('chronoDisplay').classList.remove('running');
+    document.getElementById('btnStart').disabled = false;
+    document.getElementById('btnStop').disabled = true;
+  }
+
+  window.startChrono = function startChrono() {
     if (running) return;
     running = true;
     const start = Date.now() - chronoMs;
@@ -1022,58 +1217,66 @@
     document.getElementById('chronoDisplay').classList.add('running');
     document.getElementById('btnStart').disabled = true;
     document.getElementById('btnStop').disabled = false;
-  }
+  };
 
-  function stopChrono() {
+  window.stopChrono = function stopChrono() {
     if (!running) return;
     running = false;
     clearInterval(chronoInterval);
     document.getElementById('chronoDisplay').classList.remove('running');
     document.getElementById('btnStart').disabled = false;
     document.getElementById('btnStop').disabled = true;
-  }
+  };
 
-  function saveEntry() {
+  window.saveEntry = async function saveEntry() {
+    const saveButton = document.getElementById('saveButton');
+    const saveStatus = document.getElementById('saveStatus');
     const name = document.getElementById('adminName').value.trim() || 'Anonyme';
-    const time = document.getElementById('chronoDisplay').textContent;
-    const list = document.getElementById('recentList');
-    const item = document.createElement('div');
-    item.className = 'entry-item';
-    item.innerHTML = `<div class="entry-name">${name}</div><div class="entry-time">${time}</div><button class="entry-delete" onclick="this.parentElement.remove()">✕</button>`;
-    list.prepend(item);
-    // reset
-    chronoMs = 0;
-    document.getElementById('chronoDisplay').textContent = '00:00.0';
+    const seconds = Number((chronoMs / 1000).toFixed(1));
+
+    if (seconds <= 0) {
+      saveStatus.textContent = 'Lance puis arrête le chrono avant d’enregistrer.';
+      return;
+    }
+
+    saveButton.disabled = true;
+    saveStatus.textContent = 'Enregistrement en cours...';
+
+    const { error } = await supabase
+      .from('scores')
+      .insert([{ pseudo: name, temps: seconds }]);
+
+    if (error) {
+      console.error('Erreur lors de l’enregistrement :', error);
+      saveStatus.textContent = 'Erreur Supabase : vérifie les permissions RLS.';
+      saveButton.disabled = false;
+      return;
+    }
+
     document.getElementById('adminName').value = '';
-    document.getElementById('btnStart').disabled = false;
+    resetChronoUi();
+    saveStatus.textContent = 'Temps enregistré avec succès.';
+    await loadScores();
+    saveButton.disabled = false;
+  };
+
+  async function deleteEntry(id) {
+    const { error } = await supabase
+      .from('scores')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Erreur de suppression :', error);
+      document.getElementById('saveStatus').textContent = 'Suppression impossible avec les règles actuelles.';
+      return;
+    }
+
+    document.getElementById('saveStatus').textContent = 'Entrée supprimée.';
+    await loadScores();
   }
 
-  // Chart
-  const times = [120.5, 114.0, 109.2, 106.8, 102.3];
-  const max = Math.max(...times);
-  const min = Math.min(...times);
-  const labels = ['P1', 'P2', 'P3', 'P4', 'P5'];
-  const container = document.getElementById('chartBars');
-
-  times.forEach((t, i) => {
-    const height = 20 + ((max - t) / (max - min)) * 70;
-    const isBest = t === min;
-    const wrap = document.createElement('div');
-    wrap.className = 'chart-bar-wrap';
-    const timeLabel = document.createElement('div');
-    timeLabel.className = 'chart-time-label';
-    timeLabel.textContent = `${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')}`;
-    const bar = document.createElement('div');
-    bar.className = 'chart-bar' + (isBest ? ' best-bar' : '');
-    bar.style.height = height + 'px';
-    const label = document.createElement('div');
-    label.className = 'chart-label';
-    label.textContent = labels[i];
-    wrap.appendChild(timeLabel);
-    wrap.appendChild(bar);
-    wrap.appendChild(label);
-    container.appendChild(wrap);
-  });
+  loadScores();
 </script>
 </body>
 </html>
