@@ -801,7 +801,7 @@
 <!-- PAGE CLASSEMENT -->
 <div class="page active" id="page-classement">
   <div class="hero">
-    <div class="hero-label">Saison 2026 · Jardin des Durand</div>
+    <div class="hero-label">Saison 2026</div>
     <h1 class="hero-title">Classement<br><span>Général</span></h1>
     <div class="hero-meta">
       <div><strong id="participantsCount">0</strong> participants</div>
@@ -889,7 +889,7 @@
 <div class="page" id="page-admin">
   <div class="admin-page">
     <div class="admin-title">Interface Admin</div>
-    <div class="admin-sub">Saisie des chronos · Reliée à Supabase</div>
+    <div class="admin-sub">Saisie des chronos · Accès protégé par mot de passe</div>
 
     <div class="form-card">
       <label class="form-label">Nom du participant</label>
@@ -922,12 +922,33 @@
   const supabaseUrl = "https://bbeucermbrdofffsbpsz.supabase.co";
   const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJiZXVjZXJtYnJkb2ZmZnNicHN6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDMwMTQsImV4cCI6MjA5MTY3OTAxNH0.KcKrZvmnHfzglk7uQjcqNyNvHQbrYP4NTT46sLo_4aw";
   const supabase = createClient(supabaseUrl, supabaseKey);
+  const ADMIN_PASSWORD = "miniac2026!";
+  const ADMIN_SESSION_KEY = "parcours-admin-unlocked";
 
   let chronoInterval = null;
   let chronoMs = 0;
   let running = false;
 
+  function isAdminUnlocked() {
+    return sessionStorage.getItem(ADMIN_SESSION_KEY) === 'true';
+  }
+
+  function requestAdminAccess() {
+    if (isAdminUnlocked()) return true;
+    const password = window.prompt('Mot de passe admin :');
+    if (password === null) return false;
+    if (password !== ADMIN_PASSWORD) {
+      window.alert('Mot de passe incorrect.');
+      return false;
+    }
+    sessionStorage.setItem(ADMIN_SESSION_KEY, 'true');
+    return true;
+  }
+
   window.showPage = function showPage(name, button) {
+    if (name === 'admin' && !requestAdminAccess()) {
+      return;
+    }
     document.querySelectorAll('.page').forEach((page) => page.classList.remove('active'));
     document.querySelectorAll('.nav-tab').forEach((tab) => tab.classList.remove('active'));
     document.getElementById(`page-${name}`).classList.add('active');
@@ -1229,6 +1250,8 @@
   };
 
   window.saveEntry = async function saveEntry() {
+    if (!requestAdminAccess()) return;
+
     const saveButton = document.getElementById('saveButton');
     const saveStatus = document.getElementById('saveStatus');
     const name = document.getElementById('adminName').value.trim() || 'Anonyme';
@@ -1261,6 +1284,8 @@
   };
 
   async function deleteEntry(id) {
+    if (!requestAdminAccess()) return;
+
     const { error } = await supabase
       .from('scores')
       .delete()
