@@ -769,6 +769,36 @@
     padding: 12px 0;
   }
 
+  .category-switcher {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .category-chip {
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--muted);
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 15px;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .category-chip.active {
+    background: var(--olive);
+    color: var(--bg);
+    border-color: var(--olive);
+  }
+
+  .category-chip:hover:not(.active) {
+    color: var(--cream);
+    border-color: var(--olive);
+  }
+
   /* Profile selector */
   .profile-selector-bar {
     display: flex;
@@ -777,6 +807,7 @@
     padding: 18px 32px;
     border-bottom: 1px solid var(--border);
     background: var(--surface);
+    flex-wrap: wrap;
   }
 
   .profile-selector-label {
@@ -892,6 +923,24 @@
 
   .upload-input { display: none; }
 
+  .btn-delete-participant {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+
+  .btn-delete-participant:hover {
+    border-color: #e05555;
+    color: #e05555;
+  }
+
   .new-participant-row {
     display: flex;
     gap: 8px;
@@ -961,6 +1010,10 @@
   <div class="leaderboard">
     <div class="section-header">
       <div class="section-title">Podium</div>
+      <div class="category-switcher" id="leaderboardCategorySwitch">
+        <button class="category-chip active" data-category="sprint" onclick="setLeaderboardCategory('sprint')">Sprint</button>
+        <button class="category-chip" data-category="endurance" onclick="setLeaderboardCategory('endurance')">Endurance</button>
+      </div>
     </div>
 
     <div class="podium" id="podiumContainer">
@@ -999,6 +1052,10 @@
     <select id="profileSelect" class="profile-select" onchange="onProfileSelectChange()">
       <option value="">— Sélectionner —</option>
     </select>
+    <div class="category-switcher" id="profileCategorySwitch">
+      <button class="category-chip active" data-category="sprint" onclick="setProfileCategory('sprint')">Sprint</button>
+      <button class="category-chip" data-category="endurance" onclick="setProfileCategory('endurance')">Endurance</button>
+    </div>
   </div>
 
   <div id="profileContent" style="display:none">
@@ -1058,6 +1115,12 @@
       <label class="form-label">Nom du participant</label>
       <input class="form-input" type="text" placeholder="Ex: Thomas M." id="adminName">
 
+      <label class="form-label">Catégorie</label>
+      <select class="form-input" id="adminCategory">
+        <option value="sprint">Sprint</option>
+        <option value="endurance">Endurance</option>
+      </select>
+
       <label class="form-label">Chronomètre</label>
       <div class="chrono-display" id="chronoDisplay">00:00.0</div>
 
@@ -1099,10 +1162,16 @@
   const supabase = createClient(supabaseUrl, supabaseKey);
   const ADMIN_PASSWORD = "miniac2026!";
   const ADMIN_SESSION_KEY = "parcours-admin-unlocked";
+  const CATEGORY_LABELS = {
+    sprint: 'Sprint',
+    endurance: 'Endurance'
+  };
 
   let chronoInterval = null;
   let chronoMs = 0;
   let running = false;
+  let currentLeaderboardCategory = 'sprint';
+  let currentProfileCategory = 'sprint';
 
   function isAdminUnlocked() {
     return sessionStorage.getItem(ADMIN_SESSION_KEY) === 'true';
@@ -1186,6 +1255,27 @@
     });
   }
 
+  function normalizeCategory(category) {
+    return category === 'endurance' ? 'endurance' : 'sprint';
+  }
+
+  function getCategoryLabel(category) {
+    return CATEGORY_LABELS[normalizeCategory(category)];
+  }
+
+  function filterRowsByCategory(rows, category) {
+    const normalized = normalizeCategory(category);
+    return rows.filter((row) => normalizeCategory(row.categorie) === normalized);
+  }
+
+  function setCategoryButtons(containerId, category) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.querySelectorAll('.category-chip').forEach((button) => {
+      button.classList.toggle('active', button.dataset.category === category);
+    });
+  }
+
   function aggregateParticipants(rows) {
     const grouped = new Map();
     rows.forEach((row) => {
@@ -1199,6 +1289,17 @@
       participant.best = Math.min(participant.best, row.temps);
     });
     return [...grouped.values()].sort((a, b) => a.best - b.best);
+  }
+
+  function getAllParticipantNames(scoreRows, participantRows) {
+    const names = new Set();
+    (participantRows || []).forEach((participant) => {
+      if (participant.pseudo) names.add(participant.pseudo);
+    });
+    (scoreRows || []).forEach((row) => {
+      names.add(row.pseudo || 'Anonyme');
+    });
+    return [...names].sort((a, b) => a.localeCompare(b, 'fr'));
   }
 
   function renderPodium(participants) {
@@ -1279,7 +1380,7 @@
       const item = document.createElement('div');
       item.className = 'entry-item';
       item.innerHTML = `
-        <div class="entry-name">${escapeHtml(row.pseudo || 'Anonyme')}</div>
+        <div class="entry-name">${escapeHtml(row.pseudo || 'Anonyme')} · ${escapeHtml(getCategoryLabel(row.categorie))}</div>
         <div class="entry-time">${secondsToChrono(row.temps)}</div>
         <button class="entry-delete" title="Supprimer cette entrée">✕</button>
       `;
@@ -1292,6 +1393,7 @@
 
   // Global cache for rows/participants used by profile rendering
   let _cachedRows = [];
+  let _cachedParticipantRows = [];
   let _cachedParticipants = [];
   let _avatarMap = {}; // pseudo -> avatar_url
 
@@ -1303,18 +1405,17 @@
     return initials;
   }
 
-  function updateProfileSelect(participants) {
+  function updateProfileSelect(names) {
     const sel = document.getElementById('profileSelect');
     const current = sel.value;
     sel.innerHTML = '<option value="">— Sélectionner —</option>';
-    participants.forEach((p) => {
+    names.forEach((pseudo) => {
       const opt = document.createElement('option');
-      opt.value = p.pseudo;
-      opt.textContent = p.pseudo;
+      opt.value = pseudo;
+      opt.textContent = pseudo;
       sel.appendChild(opt);
     });
-    // Restore selection if still valid
-    if (current && participants.find((p) => p.pseudo === current)) {
+    if (current && names.includes(current)) {
       sel.value = current;
     }
   }
@@ -1329,8 +1430,26 @@
     renderProfileForPseudo(pseudo, _cachedRows, _cachedParticipants);
   };
 
+  window.setLeaderboardCategory = function(category) {
+    currentLeaderboardCategory = normalizeCategory(category);
+    setCategoryButtons('leaderboardCategorySwitch', currentLeaderboardCategory);
+    const rows = filterRowsByCategory(_cachedRows, currentLeaderboardCategory);
+    const participants = aggregateParticipants(rows);
+    renderPodium(participants);
+    renderResults(participants);
+    updateMeta(rows, participants);
+  };
+
+  window.setProfileCategory = function(category) {
+    currentProfileCategory = normalizeCategory(category);
+    setCategoryButtons('profileCategorySwitch', currentProfileCategory);
+    const pseudo = document.getElementById('profileSelect').value;
+    if (pseudo) {
+      renderProfileForPseudo(pseudo, _cachedRows, _cachedParticipants);
+    }
+  };
+
   window.openProfile = function(pseudo) {
-    // Switch to profile tab and select the participant
     document.querySelectorAll('.page').forEach((page) => page.classList.remove('active'));
     document.querySelectorAll('.nav-tab').forEach((tab) => tab.classList.remove('active'));
     document.getElementById('page-profil').classList.add('active');
@@ -1339,6 +1458,8 @@
     });
     const sel = document.getElementById('profileSelect');
     sel.value = pseudo;
+    currentProfileCategory = currentLeaderboardCategory;
+    setCategoryButtons('profileCategorySwitch', currentProfileCategory);
     renderProfileForPseudo(pseudo, _cachedRows, _cachedParticipants);
   };
 
@@ -1348,18 +1469,36 @@
     chartBars.innerHTML = '';
     historyList.innerHTML = '';
 
-    const participant = participants.find((p) => p.pseudo === pseudo);
+    const categoryRows = filterRowsByCategory(rows, currentProfileCategory);
+    const categoryParticipants = aggregateParticipants(categoryRows);
+    const participant = categoryParticipants.find((p) => p.pseudo === pseudo);
     if (!participant) {
-      document.getElementById('profileContent').style.display = 'none';
-      document.getElementById('profileEmpty').style.display = 'block';
+      const avatarUrl = _avatarMap[pseudo] || null;
+      const avatarEl = document.getElementById('profileAvatar');
+      document.getElementById('profileContent').style.display = 'block';
+      document.getElementById('profileEmpty').style.display = 'none';
+      if (avatarUrl) {
+        avatarEl.classList.add('has-photo');
+        avatarEl.innerHTML = `<img class="avatar-img" src="${escapeHtml(avatarUrl)}" alt="${escapeHtml(getInitials(pseudo))}" onerror="this.parentElement.classList.remove('has-photo');this.parentElement.textContent='${escapeHtml(getInitials(pseudo))}';this.remove()">`;
+      } else {
+        avatarEl.classList.remove('has-photo');
+        avatarEl.textContent = getInitials(pseudo);
+      }
+      document.getElementById('profileRankLabel').textContent = `Profil · ${getCategoryLabel(currentProfileCategory)} · Aucun chrono`;
+      document.getElementById('profileName').textContent = pseudo;
+      document.getElementById('profileBest').textContent = '--:--.-';
+      document.getElementById('profileRuns').textContent = '0';
+      document.getElementById('profileAverage').textContent = '--:--.-';
+      document.getElementById('profileProgress').textContent = '--';
+      historyList.innerHTML = `<div class="empty-state">Aucun chrono enregistré en ${getCategoryLabel(currentProfileCategory).toLowerCase()}.</div>`;
       return;
     }
 
     document.getElementById('profileContent').style.display = 'block';
     document.getElementById('profileEmpty').style.display = 'none';
 
-    const rank = participants.findIndex((p) => p.pseudo === pseudo) + 1;
-    const participantRows = rows
+    const rank = categoryParticipants.findIndex((p) => p.pseudo === pseudo) + 1;
+    const participantRows = categoryRows
       .filter((row) => (row.pseudo || 'Anonyme') === pseudo)
       .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
 
@@ -1376,7 +1515,7 @@
       avatarEl.classList.remove('has-photo');
       avatarEl.textContent = getInitials(pseudo);
     }
-    document.getElementById('profileRankLabel').textContent = `Profil · Classement #${rank}`;
+    document.getElementById('profileRankLabel').textContent = `Profil · ${getCategoryLabel(currentProfileCategory)} · Classement #${rank}`;
     document.getElementById('profileName').textContent = pseudo;
     document.getElementById('profileBest').textContent = secondsToChrono(participant.best);
     document.getElementById('profileRuns').textContent = String(participant.runs);
@@ -1456,13 +1595,19 @@
           ${hasPhoto ? '🔄 Changer' : '📷 Photo'}
           <input type="file" accept="image/*" class="upload-input" data-pseudo="${escapeHtml(p.pseudo)}">
         </label>
+        <button class="btn-delete-participant" title="Supprimer ${escapeHtml(p.pseudo)}">🗑</button>
       `;
       item.querySelector('input[type=file]').addEventListener('change', (e) => uploadAvatar(e, p.pseudo));
+      item.querySelector('.btn-delete-participant').addEventListener('click', async () => {
+        await deleteParticipant(p.pseudo);
+      });
       list.appendChild(item);
     });
   }
 
   async function uploadAvatar(event, pseudo) {
+    if (!requestAdminAccess()) return;
+
     const file = event.target.files[0];
     if (!file) return;
     const status = document.getElementById('participantStatus');
@@ -1499,6 +1644,8 @@
   }
 
   window.addParticipant = async function() {
+    if (!requestAdminAccess()) return;
+
     const input = document.getElementById('newParticipantName');
     const pseudo = input.value.trim();
     const status = document.getElementById('participantStatus');
@@ -1519,9 +1666,50 @@
     await loadScores();
   };
 
+  async function deleteParticipant(pseudo) {
+    if (!requestAdminAccess()) return;
+
+    const status = document.getElementById('participantStatus');
+    if (!window.confirm(`Supprimer ${pseudo} et tous ses chronos ?`)) return;
+
+    status.textContent = `Suppression de ${pseudo}...`;
+
+    const { error: scoresError } = await supabase
+      .from('scores')
+      .delete()
+      .eq('pseudo', pseudo);
+
+    if (scoresError) {
+      console.error('Erreur suppression scores :', scoresError);
+      status.textContent = 'Impossible de supprimer les chronos du participant.';
+      return;
+    }
+
+    const { error: participantError } = await supabase
+      .from('participants')
+      .delete()
+      .eq('pseudo', pseudo);
+
+    if (participantError) {
+      console.error('Erreur suppression participant :', participantError);
+      status.textContent = 'Chronos supprimés, mais fiche participant non supprimée.';
+      await loadScores();
+      return;
+    }
+
+    if (document.getElementById('profileSelect').value === pseudo) {
+      document.getElementById('profileSelect').value = '';
+      document.getElementById('profileContent').style.display = 'none';
+      document.getElementById('profileEmpty').style.display = 'block';
+    }
+
+    status.textContent = `${pseudo} supprimé.`;
+    await loadScores();
+  }
+
   async function loadScores() {
     const [scoresResult, participantsResult] = await Promise.all([
-      supabase.from('scores').select('id, pseudo, temps, created_at').order('created_at', { ascending: false }),
+      supabase.from('scores').select('id, pseudo, temps, categorie, created_at').order('created_at', { ascending: false }),
       supabase.from('participants').select('pseudo, avatar_url')
     ]);
 
@@ -1533,8 +1721,9 @@
       return;
     }
 
-    // Build avatar map
+    let participantRows = [];
     if (!participantsResult.error && participantsResult.data) {
+      participantRows = participantsResult.data;
       _avatarMap = {};
       participantsResult.data.forEach((p) => {
         if (p.avatar_url) _avatarMap[p.pseudo] = p.avatar_url;
@@ -1542,19 +1731,26 @@
       renderParticipantAdminList(participantsResult.data);
     }
 
-    const rows = scoresResult.data || [];
-    const participants = aggregateParticipants(rows);
+    const rows = (scoresResult.data || []).map((row) => ({
+      ...row,
+      categorie: normalizeCategory(row.categorie)
+    }));
+    const allParticipantNames = getAllParticipantNames(rows, participantRows);
+    const leaderboardRows = filterRowsByCategory(rows, currentLeaderboardCategory);
+    const participants = aggregateParticipants(leaderboardRows);
 
     _cachedRows = rows;
+    _cachedParticipantRows = participantRows;
     _cachedParticipants = participants;
 
+    setCategoryButtons('leaderboardCategorySwitch', currentLeaderboardCategory);
+    setCategoryButtons('profileCategorySwitch', currentProfileCategory);
     renderPodium(participants);
     renderResults(participants);
     renderRecent(rows);
-    updateProfileSelect(participants);
-    updateMeta(rows, participants);
+    updateProfileSelect(allParticipantNames);
+    updateMeta(leaderboardRows, participants);
 
-    // Re-render profile if one is currently selected
     const currentPseudo = document.getElementById('profileSelect').value;
     if (currentPseudo) {
       renderProfileForPseudo(currentPseudo, rows, participants);
@@ -1602,6 +1798,7 @@
     const saveButton = document.getElementById('saveButton');
     const saveStatus = document.getElementById('saveStatus');
     const name = document.getElementById('adminName').value.trim() || 'Anonyme';
+    const category = normalizeCategory(document.getElementById('adminCategory').value);
     const seconds = Number((chronoMs / 1000).toFixed(1));
 
     if (seconds <= 0) {
@@ -1612,9 +1809,13 @@
     saveButton.disabled = true;
     saveStatus.textContent = 'Enregistrement en cours...';
 
+    await supabase
+      .from('participants')
+      .upsert({ pseudo: name }, { onConflict: 'pseudo' });
+
     const { error } = await supabase
       .from('scores')
-      .insert([{ pseudo: name, temps: seconds }]);
+      .insert([{ pseudo: name, temps: seconds, categorie: category }]);
 
     if (error) {
       console.error('Erreur lors de l’enregistrement :', error);
@@ -1624,6 +1825,7 @@
     }
 
     document.getElementById('adminName').value = '';
+    document.getElementById('adminCategory').value = category;
     resetChronoUi();
     saveStatus.textContent = 'Temps enregistré avec succès.';
     await loadScores();
