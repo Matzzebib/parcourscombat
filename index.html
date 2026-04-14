@@ -769,7 +769,155 @@
     padding: 12px 0;
   }
 
-  /* Responsive */
+  /* Profile selector */
+  .profile-selector-bar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 32px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .profile-selector-label {
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .profile-select {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 16px;
+    color: var(--cream);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    min-width: 200px;
+  }
+
+  .profile-select:focus { border-color: var(--olive); }
+  .profile-select option { background: var(--card); color: var(--cream); }
+
+  /* Avatar photo styles */
+  .avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+  }
+
+  .podium-avatar.has-photo,
+  .mini-avatar.has-photo,
+  .profile-avatar-big.has-photo {
+    padding: 0;
+    overflow: hidden;
+  }
+
+  /* Admin participants section */
+  .participants-section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+
+  .participants-title {
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+
+  .participant-admin-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .participant-admin-item:last-child { border-bottom: none; }
+
+  .participant-admin-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--border);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 15px;
+    color: var(--muted);
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  .participant-admin-name {
+    flex: 1;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .btn-upload {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    color: var(--muted);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px;
+    letter-spacing: 1px;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .btn-upload:hover { border-color: var(--olive); color: var(--olive-bright); }
+
+  .upload-input { display: none; }
+
+  .new-participant-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .new-participant-row .form-input {
+    margin-bottom: 0;
+    flex: 1;
+  }
+
+  .btn-add-participant {
+    background: var(--olive);
+    color: var(--bg);
+    border: none;
+    border-radius: 6px;
+    padding: 0 18px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s;
+  }
+
+  .btn-add-participant:hover { background: var(--olive-bright); }
   @media (max-width: 600px) {
     nav { padding: 14px 16px; }
     .hero, .leaderboard, .history-section { padding-left: 16px; padding-right: 16px; }
@@ -845,44 +993,59 @@
 
 <!-- PAGE PROFIL -->
 <div class="page" id="page-profil">
-  <div class="profile-hero">
-    <div class="profile-avatar-big" id="profileAvatar">--</div>
-    <div class="profile-info">
-      <div id="profileRankLabel" style="font-size:12px;letter-spacing:3px;color:var(--olive);text-transform:uppercase;margin-bottom:4px;">Profil · Aucun chrono</div>
-      <div class="profile-name" id="profileName">Aucun participant</div>
-      <div class="profile-stats">
-        <div class="stat-box">
-          <div class="stat-label">Meilleur temps</div>
-          <div class="stat-value highlight" id="profileBest">--:--.-</div>
+
+  <div class="profile-selector-bar">
+    <label class="profile-selector-label">Choisir un participant</label>
+    <select id="profileSelect" class="profile-select" onchange="onProfileSelectChange()">
+      <option value="">— Sélectionner —</option>
+    </select>
+  </div>
+
+  <div id="profileContent" style="display:none">
+    <div class="profile-hero">
+      <div class="profile-avatar-big" id="profileAvatar">--</div>
+      <div class="profile-info">
+        <div id="profileRankLabel" style="font-size:12px;letter-spacing:3px;color:var(--olive);text-transform:uppercase;margin-bottom:4px;">Profil · Aucun chrono</div>
+        <div class="profile-name" id="profileName">Aucun participant</div>
+        <div class="profile-stats">
+          <div class="stat-box">
+            <div class="stat-label">Meilleur temps</div>
+            <div class="stat-value highlight" id="profileBest">--:--.-</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Passages</div>
+            <div class="stat-value" id="profileRuns">0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Moy.</div>
+            <div class="stat-value" id="profileAverage">--:--.-</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Progression</div>
+            <div class="stat-value" id="profileProgress">--</div>
+          </div>
         </div>
-        <div class="stat-box">
-          <div class="stat-label">Passages</div>
-          <div class="stat-value" id="profileRuns">0</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-label">Moy.</div>
-          <div class="stat-value" id="profileAverage">--:--.-</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-label">Progression</div>
-          <div class="stat-value" id="profileProgress">--</div>
-        </div>
+      </div>
+    </div>
+
+    <div class="history-section">
+      <div class="history-title">Historique des passages</div>
+
+      <div class="chart-container">
+        <div style="font-size:11px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:16px;">Évolution des chronos</div>
+        <div class="chart-bars" id="chartBars"></div>
+      </div>
+
+      <div class="history-list" id="historyList">
+        <div class="empty-state">Aucun historique disponible.</div>
       </div>
     </div>
   </div>
 
-  <div class="history-section">
-    <div class="history-title">Historique des passages</div>
-
-    <div class="chart-container">
-      <div style="font-size:11px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:16px;">Évolution des chronos</div>
-      <div class="chart-bars" id="chartBars"></div>
-    </div>
-
-    <div class="history-list" id="historyList">
-      <div class="empty-state">Aucun historique disponible.</div>
-    </div>
+  <div id="profileEmpty" style="padding:48px 32px;color:var(--muted);font-size:14px;letter-spacing:1px;text-transform:uppercase;">
+    Sélectionne un participant pour voir son profil.
   </div>
+
 </div>
 
 <!-- PAGE ADMIN -->
@@ -905,6 +1068,18 @@
 
       <button class="btn-save" id="saveButton" onclick="saveEntry()">Enregistrer ce temps</button>
       <div class="save-status" id="saveStatus"></div>
+    </div>
+
+    <div class="participants-section">
+      <div class="participants-title">Gestion des participants</div>
+      <div class="new-participant-row">
+        <input class="form-input" type="text" placeholder="Nouveau pseudo..." id="newParticipantName">
+        <button class="btn-add-participant" onclick="addParticipant()">+ Ajouter</button>
+      </div>
+      <div id="participantAdminList">
+        <div class="empty-state">Aucun participant enregistré.</div>
+      </div>
+      <div class="save-status" id="participantStatus"></div>
     </div>
 
     <div class="recent-entries">
@@ -1039,9 +1214,14 @@
     participants.slice(0, 3).forEach((participant, index) => {
       const card = document.createElement('div');
       card.className = `podium-card ${rankClasses[index]}`;
+      card.style.cursor = 'pointer';
+      card.title = `Voir le profil de ${participant.pseudo}`;
+      card.addEventListener('click', () => window.openProfile(participant.pseudo));
+      const avatarUrl = _avatarMap[participant.pseudo] || null;
+      const hasPhoto = !!avatarUrl;
       card.innerHTML = `
         <div class="podium-rank">${index + 1}</div>
-        <div class="podium-avatar">${escapeHtml(getInitials(participant.pseudo))}</div>
+        <div class="podium-avatar ${hasPhoto ? 'has-photo' : ''}">${avatarHtml(participant.pseudo, avatarUrl)}</div>
         <div class="podium-name">${escapeHtml(participant.pseudo)}</div>
         <div class="podium-time">${secondsToChrono(participant.best)}</div>
         <div class="podium-runs">${participant.runs} passage${participant.runs > 1 ? 's' : ''}</div>
@@ -1062,11 +1242,16 @@
     const bestTime = participants[0].best;
     participants.forEach((participant, index) => {
       const row = document.createElement('tr');
+      row.style.cursor = 'pointer';
+      row.title = `Voir le profil de ${participant.pseudo}`;
+      row.addEventListener('click', () => window.openProfile(participant.pseudo));
+      const avatarUrl = _avatarMap[participant.pseudo] || null;
+      const hasPhoto = !!avatarUrl;
       row.innerHTML = `
         <td class="rank-num">${index + 1}</td>
         <td>
           <div class="participant-cell">
-            <div class="mini-avatar">${escapeHtml(getInitials(participant.pseudo))}</div>
+            <div class="mini-avatar ${hasPhoto ? 'has-photo' : ''}">${avatarHtml(participant.pseudo, avatarUrl)}</div>
             <div>
               <div class="participant-name">${escapeHtml(participant.pseudo)}</div>
               <div class="participant-runs">${participant.runs} passage${participant.runs > 1 ? 's' : ''}</div>
@@ -1105,53 +1290,111 @@
     });
   }
 
-  function renderProfile(rows, participants) {
+  // Global cache for rows/participants used by profile rendering
+  let _cachedRows = [];
+  let _cachedParticipants = [];
+  let _avatarMap = {}; // pseudo -> avatar_url
+
+  function avatarHtml(pseudo, avatarUrl, size = 'mini') {
+    const initials = escapeHtml(getInitials(pseudo));
+    if (avatarUrl) {
+      return `<img class="avatar-img" src="${escapeHtml(avatarUrl)}" alt="${initials}" onerror="this.parentElement.classList.remove('has-photo');this.parentElement.textContent='${initials}';this.remove()">`;
+    }
+    return initials;
+  }
+
+  function updateProfileSelect(participants) {
+    const sel = document.getElementById('profileSelect');
+    const current = sel.value;
+    sel.innerHTML = '<option value="">— Sélectionner —</option>';
+    participants.forEach((p) => {
+      const opt = document.createElement('option');
+      opt.value = p.pseudo;
+      opt.textContent = p.pseudo;
+      sel.appendChild(opt);
+    });
+    // Restore selection if still valid
+    if (current && participants.find((p) => p.pseudo === current)) {
+      sel.value = current;
+    }
+  }
+
+  window.onProfileSelectChange = function() {
+    const pseudo = document.getElementById('profileSelect').value;
+    if (!pseudo) {
+      document.getElementById('profileContent').style.display = 'none';
+      document.getElementById('profileEmpty').style.display = 'block';
+      return;
+    }
+    renderProfileForPseudo(pseudo, _cachedRows, _cachedParticipants);
+  };
+
+  window.openProfile = function(pseudo) {
+    // Switch to profile tab and select the participant
+    document.querySelectorAll('.page').forEach((page) => page.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach((tab) => tab.classList.remove('active'));
+    document.getElementById('page-profil').classList.add('active');
+    document.querySelectorAll('.nav-tab').forEach((tab) => {
+      if (tab.textContent.trim() === 'Profil') tab.classList.add('active');
+    });
+    const sel = document.getElementById('profileSelect');
+    sel.value = pseudo;
+    renderProfileForPseudo(pseudo, _cachedRows, _cachedParticipants);
+  };
+
+  function renderProfileForPseudo(pseudo, rows, participants) {
     const chartBars = document.getElementById('chartBars');
     const historyList = document.getElementById('historyList');
     chartBars.innerHTML = '';
     historyList.innerHTML = '';
 
-    if (!participants.length) {
-      document.getElementById('profileAvatar').textContent = '--';
-      document.getElementById('profileRankLabel').textContent = 'Profil · Aucun chrono';
-      document.getElementById('profileName').textContent = 'Aucun participant';
-      document.getElementById('profileBest').textContent = '--:--.-';
-      document.getElementById('profileRuns').textContent = '0';
-      document.getElementById('profileAverage').textContent = '--:--.-';
-      document.getElementById('profileProgress').textContent = '--';
-      historyList.innerHTML = '<div class="empty-state">Aucun historique disponible.</div>';
+    const participant = participants.find((p) => p.pseudo === pseudo);
+    if (!participant) {
+      document.getElementById('profileContent').style.display = 'none';
+      document.getElementById('profileEmpty').style.display = 'block';
       return;
     }
 
-    const leader = participants[0];
-    const leaderRows = rows
-      .filter((row) => (row.pseudo || 'Anonyme') === leader.pseudo)
+    document.getElementById('profileContent').style.display = 'block';
+    document.getElementById('profileEmpty').style.display = 'none';
+
+    const rank = participants.findIndex((p) => p.pseudo === pseudo) + 1;
+    const participantRows = rows
+      .filter((row) => (row.pseudo || 'Anonyme') === pseudo)
       .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
 
-    const average = leader.total / leader.runs;
-    const oldest = leaderRows[leaderRows.length - 1]?.temps;
-    const progress = typeof oldest === 'number' ? oldest - leader.best : 0;
+    const average = participant.total / participant.runs;
+    const oldest = participantRows[participantRows.length - 1]?.temps;
+    const progress = typeof oldest === 'number' ? oldest - participant.best : 0;
 
-    document.getElementById('profileAvatar').textContent = getInitials(leader.pseudo);
-    document.getElementById('profileRankLabel').textContent = 'Profil · Classement #1';
-    document.getElementById('profileName').textContent = leader.pseudo;
-    document.getElementById('profileBest').textContent = secondsToChrono(leader.best);
-    document.getElementById('profileRuns').textContent = String(leader.runs);
+    const avatarUrl = _avatarMap[pseudo] || null;
+    const avatarEl = document.getElementById('profileAvatar');
+    if (avatarUrl) {
+      avatarEl.classList.add('has-photo');
+      avatarEl.innerHTML = `<img class="avatar-img" src="${escapeHtml(avatarUrl)}" alt="${escapeHtml(getInitials(pseudo))}" onerror="this.parentElement.classList.remove('has-photo');this.parentElement.textContent='${escapeHtml(getInitials(pseudo))}';this.remove()">`;
+    } else {
+      avatarEl.classList.remove('has-photo');
+      avatarEl.textContent = getInitials(pseudo);
+    }
+    document.getElementById('profileRankLabel').textContent = `Profil · Classement #${rank}`;
+    document.getElementById('profileName').textContent = pseudo;
+    document.getElementById('profileBest').textContent = secondsToChrono(participant.best);
+    document.getElementById('profileRuns').textContent = String(participant.runs);
     document.getElementById('profileAverage').textContent = secondsToChrono(average);
 
     const progressNode = document.getElementById('profileProgress');
     progressNode.textContent = `${progress >= 0 ? '-' : '+'}${Math.abs(progress).toFixed(1)}s`;
     progressNode.style.color = progress >= 0 ? '#4caf50' : '#e05555';
 
-    if (!leaderRows.length) {
+    if (!participantRows.length) {
       historyList.innerHTML = '<div class="empty-state">Aucun historique disponible.</div>';
       return;
     }
 
-    const chronological = [...leaderRows].reverse();
-    const max = Math.max(...chronological.map((row) => row.temps));
-    const min = Math.min(...chronological.map((row) => row.temps));
-    const range = Math.max(max - min, 1);
+    const chronological = [...participantRows].reverse();
+    const maxT = Math.max(...chronological.map((row) => row.temps));
+    const minT = Math.min(...chronological.map((row) => row.temps));
+    const range = Math.max(maxT - minT, 1);
 
     chronological.forEach((row, index) => {
       const wrap = document.createElement('div');
@@ -1162,8 +1405,8 @@
       timeLabel.textContent = secondsToChrono(row.temps);
 
       const bar = document.createElement('div');
-      bar.className = 'chart-bar' + (row.temps === min ? ' best-bar' : '');
-      bar.style.height = `${20 + ((max - row.temps) / range) * 70}px`;
+      bar.className = 'chart-bar' + (row.temps === minT ? ' best-bar' : '');
+      bar.style.height = `${20 + ((maxT - row.temps) / range) * 70}px`;
 
       const label = document.createElement('div');
       label.className = 'chart-label';
@@ -1175,13 +1418,13 @@
       chartBars.appendChild(wrap);
     });
 
-    leaderRows.forEach((row, index) => {
+    participantRows.forEach((row, index) => {
       const item = document.createElement('div');
       item.className = 'history-item';
       item.innerHTML = `
         <div><div class="history-date">${escapeHtml(formatHistoryDate(row.created_at))}</div></div>
         <div class="history-time">${secondsToChrono(row.temps)}</div>
-        <span class="history-badge ${row.temps === min ? 'badge-best' : 'badge-normal'}">${row.temps === min ? 'Record' : `Passage ${leaderRows.length - index}`}</span>
+        <span class="history-badge ${row.temps === minT ? 'badge-best' : 'badge-normal'}">${row.temps === minT ? '⭐ Record' : `Passage ${participantRows.length - index}`}</span>
       `;
       historyList.appendChild(item);
     });
@@ -1194,28 +1437,132 @@
     document.getElementById('lastUpdated').textContent = formatRelativeDate(rows[0]?.created_at);
   }
 
-  async function loadScores() {
-    const { data, error } = await supabase
-      .from('scores')
-      .select('id, pseudo, temps, created_at')
-      .order('created_at', { ascending: false });
+  function renderParticipantAdminList(participantRows) {
+    const list = document.getElementById('participantAdminList');
+    if (!list) return;
+    list.innerHTML = '';
+    if (!participantRows.length) {
+      list.innerHTML = '<div class="empty-state">Aucun participant enregistré.</div>';
+      return;
+    }
+    participantRows.forEach((p) => {
+      const item = document.createElement('div');
+      item.className = 'participant-admin-item';
+      const hasPhoto = !!p.avatar_url;
+      item.innerHTML = `
+        <div class="participant-admin-avatar ${hasPhoto ? 'has-photo' : ''}">${hasPhoto ? `<img class="avatar-img" src="${escapeHtml(p.avatar_url)}" alt="${escapeHtml(getInitials(p.pseudo))}">` : escapeHtml(getInitials(p.pseudo))}</div>
+        <div class="participant-admin-name">${escapeHtml(p.pseudo)}</div>
+        <label class="btn-upload">
+          ${hasPhoto ? '🔄 Changer' : '📷 Photo'}
+          <input type="file" accept="image/*" class="upload-input" data-pseudo="${escapeHtml(p.pseudo)}">
+        </label>
+      `;
+      item.querySelector('input[type=file]').addEventListener('change', (e) => uploadAvatar(e, p.pseudo));
+      list.appendChild(item);
+    });
+  }
+
+  async function uploadAvatar(event, pseudo) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const status = document.getElementById('participantStatus');
+    status.textContent = `Upload en cours pour ${pseudo}...`;
+
+    const ext = file.name.split('.').pop();
+    const fileName = `${pseudo.replace(/\s+/g, '_').toLowerCase()}_${Date.now()}.${ext}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('avatars')
+      .upload(fileName, file, { upsert: true });
+
+    if (uploadError) {
+      console.error('Erreur upload :', uploadError);
+      status.textContent = 'Erreur lors de l\'upload. Vérifie les permissions du bucket.';
+      return;
+    }
+
+    const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(fileName);
+    const publicUrl = urlData.publicUrl;
+
+    const { error: upsertError } = await supabase
+      .from('participants')
+      .upsert({ pseudo, avatar_url: publicUrl }, { onConflict: 'pseudo' });
+
+    if (upsertError) {
+      console.error('Erreur mise à jour participant :', upsertError);
+      status.textContent = 'Photo uploadée mais erreur de sauvegarde.';
+      return;
+    }
+
+    status.textContent = `Photo de ${pseudo} mise à jour !`;
+    await loadScores();
+  }
+
+  window.addParticipant = async function() {
+    const input = document.getElementById('newParticipantName');
+    const pseudo = input.value.trim();
+    const status = document.getElementById('participantStatus');
+    if (!pseudo) { status.textContent = 'Entre un pseudo.'; return; }
+
+    const { error } = await supabase
+      .from('participants')
+      .upsert({ pseudo }, { onConflict: 'pseudo' });
 
     if (error) {
-      console.error('Erreur au chargement des scores :', error);
+      console.error('Erreur ajout participant :', error);
+      status.textContent = 'Erreur lors de l\'ajout.';
+      return;
+    }
+
+    input.value = '';
+    status.textContent = `${pseudo} ajouté !`;
+    await loadScores();
+  };
+
+  async function loadScores() {
+    const [scoresResult, participantsResult] = await Promise.all([
+      supabase.from('scores').select('id, pseudo, temps, created_at').order('created_at', { ascending: false }),
+      supabase.from('participants').select('pseudo, avatar_url')
+    ]);
+
+    if (scoresResult.error) {
+      console.error('Erreur au chargement des scores :', scoresResult.error);
       document.getElementById('resultsBody').innerHTML = '<tr><td colspan="5" class="empty-state">Impossible de charger les résultats.</td></tr>';
       document.getElementById('podiumContainer').innerHTML = '<div class="empty-state">Impossible de charger le podium.</div>';
       document.getElementById('recentList').innerHTML = '<div class="empty-state">Impossible de charger les dernières saisies.</div>';
       return;
     }
 
-    const rows = data || [];
+    // Build avatar map
+    if (!participantsResult.error && participantsResult.data) {
+      _avatarMap = {};
+      participantsResult.data.forEach((p) => {
+        if (p.avatar_url) _avatarMap[p.pseudo] = p.avatar_url;
+      });
+      renderParticipantAdminList(participantsResult.data);
+    }
+
+    const rows = scoresResult.data || [];
     const participants = aggregateParticipants(rows);
+
+    _cachedRows = rows;
+    _cachedParticipants = participants;
+
     renderPodium(participants);
     renderResults(participants);
     renderRecent(rows);
-    renderProfile(rows, participants);
+    updateProfileSelect(participants);
     updateMeta(rows, participants);
+
+    // Re-render profile if one is currently selected
+    const currentPseudo = document.getElementById('profileSelect').value;
+    if (currentPseudo) {
+      renderProfileForPseudo(currentPseudo, rows, participants);
+    }
   }
+
+  // Auto-refresh every 30s
+  setInterval(loadScores, 30000);
 
   function resetChronoUi() {
     chronoMs = 0;
